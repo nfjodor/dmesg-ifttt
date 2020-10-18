@@ -30,4 +30,4 @@ In this case, you have 2 options:
 ### Make your own executable
 To compile this application, you will need node.js and npm. If you have those of two, you just install `pkg` with `npm install` then run the `npm run pkg` command.
 The built package will be in the `build` folder.
-If you are unlucky and `pkg` doesn't have pre-built node.js for make executable, your PC will compile it on the fly and it can take several hours (this depends on your CPU speed).
+If you are unlucky and `pkg` doesn't have pre-built node.js to make executable, your PC will compile it on the fly and it can take several hours (this depends on your CPU speed).
