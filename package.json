@@ -1,0 +1,24 @@
+{
+  "name": "dmesg-ifttt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "pkg-x64": "pkg index.js --targets node14-macos-x64,node14-linux-x64 --output build/dmesg-ifttt",
+    "pkg": "pkg index.js --output build/dmesg-ifttt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nfjodor/dmesg-ifttt.git"
+  },
+  "author": "Norbert Fodor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nfjodor/dmesg-ifttt/issues"
+  },
+  "homepage": "https://github.com/nfjodor/dmesg-ifttt#readme",
+  "dependencies": {
+    "pkg": "^4.4.9"
+  }
+}
