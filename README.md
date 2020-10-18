@@ -8,7 +8,7 @@ If you run the app it collects and parses kernel messages with `dmesg` (You need
 
 ### Required parameters
 I created this app in node.js without dependencies, so you can pass parameters in an unorthodox mode.
-Applications need two parameters:
+This application needs two parameters:
  - `event`: This is the IFTTT webhook event name
  - `key`: This is your unique IFTTT webhook key
 
