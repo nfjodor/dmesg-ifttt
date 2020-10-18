@@ -22,7 +22,7 @@ I'm using this application with cron, and runs in for example every minute and d
 ## IFTTT
 If you would like to test your IFTTT settings, you can do that here: https://ifttt.com/maker_webhooks.
 
-## What is my server architecture is different from `x64`?
+## What if my server architecture is different from `x64`?
 In this case, you have 2 options:
  - Run application with node.js like an ordinary man.
  - You can make your own executable.
