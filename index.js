@@ -24,6 +24,11 @@ const options = process.argv.reduce((acc, option) => {
   return acc;
 }, {});
 
+if (!options.event || !options.key) {
+  console.log(`ERROR! MISSING PARAMTERS!\n\nHow to run application\n======================\nIf you want run this script You only need some params and hit enter ;)\n\nParam list\n==========\nevent=some_event_name // Event name that will be triggered by the script\nkey=ifttt_webhook_key // IFTTT webhook key\n\nExample\n=======\napp-name event=dmesg_alert key=ifttt_webhook_key\n`);
+  return;
+}
+
 const execute = (command) => {
   return new Promise((resolve, reject) => {
     childProcess.exec(command, (error, standardOutput, standardError) => {
