@@ -13,7 +13,7 @@ Applications need two parameters:
  - `key`: This is your unique IFTTT webhook key
 
 ```shell
-sudo ./executable-app event=ifttt_event_name key=ifttt_webhook_key
+sudo ./dmesg-ifttt-linux-x64 event=ifttt_event_name key=ifttt_webhook_key
 ```
 
 ## Cron
