@@ -1,6 +1,6 @@
 /* How to run script
  * =================
- * If you want run this script You only need some params and hit enter ;)
+ * If you want run this script only need some params and hit enter ;)
  *
  * Param list
  * ==========
