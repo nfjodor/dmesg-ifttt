@@ -6,7 +6,7 @@ If you have a Linux or OSX (🤮) server and would like to notify new kernel mes
 
 ## How It works
 
-If you run the app it collects and parses kernel messages with `dmesg` (You need to run this application with root privileges) and calls an IFTTT webhook. Kernel messages will be in the `value1` so if you want to get an e-mail with those messages, you need to use the `value1` variable in the email body.
+If you run the app it collects and parses kernel messages with `dmesg` and calls an IFTTT webhook. Kernel messages will be in the `value1` so if you want to get an e-mail with those messages, you need to use the `value1` variable in the email body.
 
 ### Required parameters
 
