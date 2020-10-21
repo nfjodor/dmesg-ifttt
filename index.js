@@ -1,31 +1,46 @@
-/* How to run script
- * =================
+const howToUse = `
+ * How to run script:
+ * ==================
  * If you want run this script only need some params and hit enter ;)
  *
- * Param list
- * ==========
+ * Param list:
+ * ===========
+ * // Event name that will be triggered by the script
+ * event=some_event_name
+ * 
+ * // IFTTT webhook key
+ * key=ifttt_webhook_key
+ * 
+ * // OPTIONAL! Custom dmesg params
+ * dmesg-params="--level=err,warn --userspace"
+ * 
+ * // OPTIONAL! When the script runs at first time,
+ * // only messages will be sent that created after system start date + threshold
+ * // This value is millisecond value
+ * threshold=3600000
  *
- * event=some_event_name // Event name that will be triggered by the script
- * key=ifttt_webhook_key // IFTTT webhook key
  *
- *
- * Example
- * =======
- * node index.js event=dmesg_alert key=ifttt_webhook_key
- */
+ * Example:
+ * ========
+ * node index.js event=dmesg_alert key=ifttt_webhook_key dmesg-params="--level=err,warn --userspace" threshold=3600000`;
 
 const childProcess = require("child_process");
-const querystring = require("querystring");
 const https = require("https");
+const fs = require("fs");
+const os = require("os");
 
+const tmpDataPath = `${os.tmpdir()}/dmesg-ifttt.txt`;
+const lastDmesgEntryTime = fs.existsSync(tmpDataPath)
+  ? parseInt(fs.readFileSync(tmpDataPath, { encoding: "utf8" }), 10)
+  : "Invalid Date";
 const options = process.argv.reduce((acc, option) => {
-  const optionArray = option.split("=");
-  acc[optionArray[0]] = optionArray[1];
+  const [optionKey, ...optionValue] = option.split("=");
+  acc[optionKey] = optionValue.join("=");
   return acc;
 }, {});
 
 if (!options.event || !options.key) {
-  console.log(`ERROR! MISSING PARAMTERS!\n\nHow to run application\n======================\nIf you want run this script You only need some params and hit enter ;)\n\nParam list\n==========\nevent=some_event_name // Event name that will be triggered by the script\nkey=ifttt_webhook_key // IFTTT webhook key\n\nExample\n=======\napp-name event=dmesg_alert key=ifttt_webhook_key\n`);
+  console.log(`ERROR! MISSING PARAMTERS!\n${howToUse}`);
   return;
 }
 
@@ -42,76 +57,94 @@ const execute = (command) => {
   });
 };
 
+const isDate = (date) =>
+  new Date(date) !== "Invalid Date" && !isNaN(new Date(date));
+
+const parseIsoDate = (dateString) => {
+  const dt = dateString.split(/[: T-]/).map(parseFloat);
+  return new Date(
+    dt[0],
+    dt[1] - 1,
+    dt[2],
+    dt[3] || 0,
+    dt[4] || 0,
+    dt[5] || 0,
+    0
+  );
+};
+
 const parseDmesgData = (data) =>
   data.split(/\r?\n/).map((entry) => {
-    const [date, message] = entry.substring(1).split("] ");
-    return { date: new Date(date), message };
+    const [date, ...message] = entry.split(" ");
+    return { date: parseIsoDate(date), message: message.join(" ") };
   });
 
-const getRelevantMessages = (
-  startDate,
-  dmesgData,
-  threshold = 60 * 60 * 1000
-) => {
-  const minDate = startDate.getTime() + threshold;
-  return dmesgData.filter((entry) => entry.date.getTime() >= minDate);
+const getRelevantMessages = (minDate, dmesgData = []) =>
+  dmesgData.filter((entry) => entry.date.getTime() > minDate);
+
+const printErrorMessage = (error) => {
+  if (error.message) {
+    console.log(`Something bad happened!\n${error.message}`);
+  }
 };
 
 const sendMail = async (messages) => {
+  const lastMessage = messages[messages.length - 1];
   const message = messages.reduce((acc, message) => {
     acc += `${message.date.toLocaleString()}<br>${message.message}<br><br>`;
-    console.log(message.date.toLocaleString());
-    console.log(message.message);
-    console.log();
+    console.log(message.date.toLocaleString(), message.message);
     return acc;
   }, "");
-  const postData = querystring.stringify({ value1: message });
   const req = https.request(
     {
       hostname: "maker.ifttt.com",
       port: 443,
       path: `/trigger/${options.event}/with/key/${options.key}`,
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Content-Length": Buffer.byteLength(postData),
-      },
+      headers: { "Content-Type": "application/json" },
     },
     (res) => {
+      let response = "";
+
       res.on("data", (d) => {
-        process.stdout.write(d + "\n");
+        response += d;
+      });
+
+      res.on("end", () => {
+        const { errors: [error = {}] = [] } = JSON.parse(response);
+
+        printErrorMessage(error);
+        fs.writeFileSync(tmpDataPath, String(lastMessage.date.getTime()));
       });
     }
   );
 
-  req.on("error", (e) => {
-    console.log(`problem with request: ${e.message}`);
-  });
+  req.on("error", printErrorMessage);
 
-  req.write(postData);
+  req.write(JSON.stringify({ value1: message }));
   req.end();
 };
 
 const main = async () => {
-  let systemStartDate = new Date();
+  const parsedThreshold = parseInt(options.threshold, 10);
+  const threshold = isNaN(parsedThreshold) ? 60 * 60 * 1000 : parsedThreshold;
+  let systemStartDateTime = new Date(Date.now() - os.uptime() * 1000).getTime();
   let dmesgData = [];
   let relevantMessages = [];
 
   try {
-    systemStartDate = new Date(await execute("uptime -s"));
-  } catch (error) {
-    console.error(error.toString());
-  }
-
-  try {
     dmesgData = parseDmesgData(
-      await execute("dmesg --read-clear --time-format=ctime")
+      await execute(`dmesg ${options["dmesg-params"] || ""} --time-format=iso`)
     );
   } catch (error) {
-    console.error(error.toString());
+    return printErrorMessage({ message: error.toString() });
   }
 
-  relevantMessages = getRelevantMessages(systemStartDate, dmesgData);
+  const minDateTime = isDate(lastDmesgEntryTime)
+    ? new Date(lastDmesgEntryTime).getTime()
+    : systemStartDateTime + threshold;
+
+  relevantMessages = getRelevantMessages(minDateTime, dmesgData);
 
   if (relevantMessages.length <= 0)
     return console.log("Kernel has no new message.");
