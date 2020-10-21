@@ -19,7 +19,7 @@ This application needs two parameters:
 - `threshold`: Optional! When you run the script for the first time, only entries will be logged that created after the system start date + threshold. The threshold unit needs to be in millisecond.
 
 ```shell
-you-are@the-best:~$ sudo ./dmesg-ifttt-linux-x64 event=ifttt_event_name key=ifttt_webhook_key dmesg-params="--level=warn" threshold=3600000
+you-are@the-best:~$ ./dmesg-ifttt-linux-x64 event=ifttt_event_name key=ifttt_webhook_key dmesg-params="--level=warn" threshold=3600000
 ```
 
 ## Cron
