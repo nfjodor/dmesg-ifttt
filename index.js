@@ -44,6 +44,15 @@ if (!options.event || !options.key) {
   return;
 }
 
+const isJsonString = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
 const execute = (command) => {
   return new Promise((resolve, reject) => {
     childProcess.exec(command, (error, standardOutput, standardError) => {
@@ -111,7 +120,9 @@ const sendMail = async (messages) => {
       });
 
       res.on("end", () => {
-        const { errors: [error = {}] = [] } = JSON.parse(response);
+        const { errors: [error = {}] = [] } = isJsonString(response)
+          ? JSON.parse(response)
+          : {};
 
         printErrorMessage(error);
         fs.writeFileSync(tmpDataPath, String(lastMessage.date.getTime()));
