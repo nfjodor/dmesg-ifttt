@@ -125,7 +125,10 @@ const sendMail = async (messages) => {
           : {};
 
         printErrorMessage(error);
-        fs.writeFileSync(tmpDataPath, String(lastMessage.date.getTime()));
+
+        if (!error.message) {
+          fs.writeFileSync(tmpDataPath, String(lastMessage.date.getTime()));
+        }
       });
     }
   );
