@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "pkg-x64": "pkg index.js --targets node14-macos-x64,node14-linux-x64 --output build/dmesg-ifttt",
-    "pkg": "pkg index.js --output build/dmesg-ifttt"
+    "pkg": "pkg index.js --targets node14 --output build/dmesg-ifttt"
   },
   "repository": {
     "type": "git",
